@@ -1,11 +1,10 @@
 import asyncio
 from telegram import Update
-from telegram.ext import ApplicationBuilder, MessageHandler, filters, ContextTypes
+from telegram.ext import ApplicationBuilder, MessageHandler, CommandHandler, filters, ContextTypes
 from flask import Flask
 from threading import Thread
-import os
 
-TOKEN = os.getenv("8687782635:AAGmWfcX0y045kNql_WzS7_oa_HJIClI_0A")
+TOKEN = "8687782635:AAGmWfcX0y045kNql_WzS7_oa_HJIClI_0A"
 DELETE_TIME = 60  # 1 minute
 
 # -------- DELETE FUNCTION --------
@@ -19,8 +18,14 @@ async def delete_later(message):
 # -------- MESSAGE HANDLER --------
 async def auto_delete(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.message:
-        # run delete in background (important)
         asyncio.create_task(delete_later(update.message))
+
+# -------- START COMMAND --------
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text(
+        "✅ Bot is online!\n\n"
+        "⏳ Sab messages 1 minute me auto delete ho jayenge."
+    )
 
 # -------- KEEP ALIVE --------
 app = Flask('')
@@ -41,7 +46,8 @@ def main():
 
     app_bot = ApplicationBuilder().token(TOKEN).build()
 
-    # handle all messages
+    # handlers
+    app_bot.add_handler(CommandHandler("start", start))
     app_bot.add_handler(MessageHandler(filters.ALL, auto_delete))
 
     print("Bot Started...")
